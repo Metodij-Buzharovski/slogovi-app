@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "523645370238",
+    "project_id": "slogovi-app-20d16",
+    "storage_bucket": "slogovi-app-20d16.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:523645370238:android:9959f2948eef4718a33d2f",
+        "android_client_info": {
+          "package_name": "com.example.slogovi_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA0dup6ZKwoTHHzA1-OlI9go42KJPk_bkk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
