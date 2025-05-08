@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class CreateGroupButton extends StatelessWidget {
+  final bool inGroup;
   final Future<void> Function(String username, String groupName, int highscore) saveLocal;
 
-  const CreateGroupButton({super.key, required this.saveLocal});
+  const CreateGroupButton({super.key, required this.saveLocal, required this.inGroup});
 
   Future<void> _showCreateGroupDialog(BuildContext context) async {
     final TextEditingController _groupController = TextEditingController();
@@ -58,11 +59,12 @@ class CreateGroupButton extends StatelessWidget {
                 await firestore.collection('users').add({
                   'username': username,
                   'groupName': groupName,
-                  'highscore': 0,
+                  'highscoreL1': 0,
+                  'highscoreL2': 0,
+                  'highscoreL3': 0,
                 });
                 // save locally
                 await saveLocal(username, groupName, 0);
-                //TODO
                 if (!context.mounted) return;
                 Navigator.of(context).pop();
               },
@@ -78,7 +80,19 @@ class CreateGroupButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: InkWell(
-        onTap: () => _showCreateGroupDialog(context),
+        onTap: inGroup
+            ? () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      'Не можете да креирате нова група додека сте во група.',
+                    ),
+                  ),
+                );
+              }
+            : () async {
+                await _showCreateGroupDialog(context);
+              },
         child: Container(
           color: const Color(0xFF2c3e50),
           child: const Center(

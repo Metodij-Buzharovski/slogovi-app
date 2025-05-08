@@ -13,7 +13,7 @@ class HomeScreen extends StatelessWidget {
           children: [
             // Title section
             Expanded(
-              flex: 5,
+              flex: 6,
               child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -22,16 +22,8 @@ class HomeScreen extends StatelessWidget {
                       'СЛОГОВИ',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 48,
+                        fontSize: 96,
                         fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'интерактивна апликација',
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.9),
-                        fontSize: 24,
                       ),
                     ),
                   ],

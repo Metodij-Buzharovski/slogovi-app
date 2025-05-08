@@ -36,10 +36,11 @@ class GameScreenState extends State<GameScreen> {
     super.initState();
     // select box based on level
     masteryBox = Hive.box<int>('masteryBox${widget.level.name}');
-    _loadLocalData();
-    _loadEntries().then((_) {
-      _startGame();
-      setState(() => isLoading = false);
+    _loadLocalData().then((_) {
+      _loadEntries().then((_) {
+        _startGame();
+        setState(() => isLoading = false);
+      });
     });
   }
 
@@ -47,7 +48,8 @@ class GameScreenState extends State<GameScreen> {
     final prefs = await SharedPreferences.getInstance();
     username = prefs.getString('username');
     groupName = prefs.getString('groupName');
-    localHighScore = prefs.getInt('highscore') ?? 0;
+    final key = 'highscore${widget.level.name}';
+    localHighScore = prefs.getInt(key) ?? 0;
   }
 
   Future<void> _loadEntries() async {
@@ -108,6 +110,24 @@ class GameScreenState extends State<GameScreen> {
     setState(() {});
   }
 
+  Future<void> _updateHighScore(int newScore) async {
+    if (username == null || groupName == null) return;
+    if (newScore <= localHighScore) return;
+    localHighScore = newScore;
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'highscore${widget.level.name}';
+    await prefs.setInt(key, newScore);
+    final query = await FirebaseFirestore.instance
+        .collection('users')
+        .where('username', isEqualTo: username)
+        .where('groupName', isEqualTo: groupName)
+        .limit(1)
+        .get();
+    if (query.docs.isNotEmpty) {
+      await query.docs.first.reference.update({key: newScore});
+    }
+  }
+
   void onCorrectPressed() {
     if (!isGameActive || currentEntry == null) return;
     final now = DateTime.now();
@@ -127,23 +147,10 @@ class GameScreenState extends State<GameScreen> {
     }
 
     lastScores.add(points);
-    if (lastScores.length > 5) lastScores.removeAt(0);
+    if (lastScores.length > 100) lastScores.removeAt(0);
     score = lastScores.fold(0, (a, b) => a + b);
 
-    // update global highscore
-    if (score > localHighScore && username != null && groupName != null) {
-      localHighScore = score;
-      SharedPreferences.getInstance().then((prefs) => prefs.setInt('highscore', localHighScore));
-      FirebaseFirestore.instance
-          .collection('users')
-          .where('username', isEqualTo: username)
-          .where('groupName', isEqualTo: groupName)
-          .limit(1)
-          .get()
-          .then((q) {
-        if (q.docs.isNotEmpty) q.docs.first.reference.update({'highscore': localHighScore});
-      });
-    }
+    _updateHighScore(score);
 
     _nextEntry();
   }

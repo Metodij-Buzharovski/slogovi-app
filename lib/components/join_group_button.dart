@@ -1,58 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-class JoinGroupButton extends StatefulWidget {
+class JoinGroupButton extends StatelessWidget {
+  final bool inGroup;
   final Future<void> Function(String username, String groupName, int highscore) saveLocal;
+  final Future<void> Function() leaveGroup;
 
-  const JoinGroupButton({super.key, required this.saveLocal});
+  const JoinGroupButton({super.key, required this.inGroup, required this.saveLocal, required this.leaveGroup});
 
-  @override
-  _JoinGroupButtonState createState() => _JoinGroupButtonState();
-}
-
-class _JoinGroupButtonState extends State<JoinGroupButton> {
-  String? username;
-  String? groupName;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadLocal();
-  }
-
-  Future<void> _loadLocal() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      username = prefs.getString('username');
-      groupName = prefs.getString('groupName');
-    });
-  }
-
-  Future<void> _leaveGroup() async {
-    if (username == null || groupName == null) return;
-    final firestore = FirebaseFirestore.instance;
-    // find and delete user record
-    final query = await firestore.collection('users')
-      .where('username', isEqualTo: username)
-      .where('groupName', isEqualTo: groupName)
-      .limit(1)
-      .get();
-    if (query.docs.isNotEmpty) {
-      await query.docs.first.reference.delete();
-    }
-    // clear local storage
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('username');
-    await prefs.remove('groupName');
-    await prefs.remove('highscore');
-    setState(() {
-      username = null;
-      groupName = null;
-    });
-  }
-
-  Future<void> _showJoinGroupDialog() async {
+  Future<void> _showJoinGroupDialog(BuildContext context) async {
     final TextEditingController _groupController = TextEditingController();
     final TextEditingController _userController = TextEditingController();
 
@@ -112,13 +68,14 @@ class _JoinGroupButtonState extends State<JoinGroupButton> {
                 await firestore.collection('users').add({
                   'username': usr,
                   'groupName': grp,
-                  'highscore': 0,
+                  'highscoreL1': 0,
+                  'highscoreL2': 0,
+                  'highscoreL3': 0,
                 });
-                await widget.saveLocal(usr, grp, 0);
+                await saveLocal(usr, grp, 0);
                 //TODO
-                if (!mounted) return;
+                if (!context.mounted) return;
                 Navigator.of(context).pop();
-                await _loadLocal();
               },
               child: const Text('Ok'),
             ),
@@ -130,10 +87,9 @@ class _JoinGroupButtonState extends State<JoinGroupButton> {
 
   @override
   Widget build(BuildContext context) {
-    final inGroup = username != null && groupName != null;
     return Expanded(
       child: InkWell(
-        onTap: inGroup ? _leaveGroup : _showJoinGroupDialog,
+        onTap: inGroup ? leaveGroup : () => _showJoinGroupDialog(context),
         child: Container(
           color: inGroup ? Colors.red.withOpacity(0.7) : const Color(0xFF2ecc71),
           child: Center(
