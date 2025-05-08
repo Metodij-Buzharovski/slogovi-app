@@ -158,12 +158,13 @@ class GameScreenState extends State<GameScreen> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) return const Center(child: CircularProgressIndicator());
-    final display = currentEntry ?? '';
+    final display = currentEntry?.toLowerCase() ?? '';
     return Scaffold(
       backgroundColor: Colors.lightBlue,
       body: SafeArea(
         child: Stack(
           children: [
+             // Score display (top left)
             Positioned(
               left: 20, top: 20,
               child: Container(
@@ -175,6 +176,7 @@ class GameScreenState extends State<GameScreen> {
                 child: Text('Поени: $score', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
               ),
             ),
+            // Back button (top right)
             Positioned(
               right: 20, top: 20,
               child: ElevatedButton(
@@ -183,18 +185,33 @@ class GameScreenState extends State<GameScreen> {
                 child: const Text('Назад', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               ),
             ),
+            // Word display (center of screen)
             Center(
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(display, style: const TextStyle(fontSize: 64, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 2)),
-                  const SizedBox(width: 20),
-                  Container(width: 2, height: 80, color: Colors.white),
-                  const SizedBox(width: 20),
-                  Transform(alignment: Alignment.center, transform: Matrix4.rotationZ(pi), child: Text(display, style: const TextStyle(fontSize: 64, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 2))),
-                ],
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade700,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.3),
+                      blurRadius: 10,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: Text(
+                  display,
+                  style: const TextStyle(
+                    fontSize: 64,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    letterSpacing: 2,
+                  ),
+                ),
               ),
             ),
+            // Next button (bottom right)
             Positioned(
               right: 20, bottom: 20,
               child: ElevatedButton(
